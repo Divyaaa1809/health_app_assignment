@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
+import '../../../dashboard/presentation/bloc/dashboard_event.dart';
 import '../../domain/entities/sleep_data.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -176,6 +178,10 @@ class _SleepLogPageState extends State<SleepLogPage> {
     // Send data to BLoC.
     // BLoC → SaveSleep → Repository → Hive
     context.read<SleepBloc>().add(SleepSaved(sleepData));
+
+    context.read<DashboardBloc>().add(
+      DashboardSleepChanged(sleepData.totalSleep.inMinutes),
+    );
 
     if (!mounted) return;
 
