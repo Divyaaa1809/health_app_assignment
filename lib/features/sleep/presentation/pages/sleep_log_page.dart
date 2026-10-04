@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
-import '../../../dashboard/presentation/bloc/dashboard_event.dart';
-import '../../domain/entities/sleep_data.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
+import '../../../dashboard/presentation/bloc/dashboard_event.dart';
+
+import '../../domain/services/sleep_calculator.dart';
 import '../bloc/sleep_bloc.dart';
 import '../bloc/sleep_event.dart';
+import '../bloc/sleep_state.dart';
 
 class SleepLogPage extends StatefulWidget {
   const SleepLogPage({super.key});
@@ -18,6 +19,31 @@ class SleepLogPage extends StatefulWidget {
 class _SleepLogPageState extends State<SleepLogPage> {
   TimeOfDay? sleepStart;
   TimeOfDay? sleepEnd;
+
+  final SleepDataCalculator _calculator = const SleepDataCalculator();
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      final sleepState = context.read<SleepBloc>().state;
+
+      if (sleepState is SleepLoaded) {
+        final sleep = sleepState.sleep;
+
+        if (sleep != null) {
+          setState(() {
+            sleepStart = TimeOfDay.fromDateTime(sleep.sleepStart);
+
+            sleepEnd = TimeOfDay.fromDateTime(sleep.sleepEnd);
+          });
+        }
+      }
+    });
+  }
 
   Future<void> _selectStartTime() async {
     final time = await showTimePicker(
@@ -31,7 +57,7 @@ class _SleepLogPageState extends State<SleepLogPage> {
       },
     );
 
-    if (time != null) {
+    if (time != null && mounted) {
       setState(() {
         sleepStart = time;
       });
@@ -50,7 +76,7 @@ class _SleepLogPageState extends State<SleepLogPage> {
       },
     );
 
-    if (time != null) {
+    if (time != null && mounted) {
       setState(() {
         sleepEnd = time;
       });
@@ -64,6 +90,37 @@ class _SleepLogPageState extends State<SleepLogPage> {
 
     return '${time.hour.toString().padLeft(2, '0')}:'
         '${time.minute.toString().padLeft(2, '0')}';
+  }
+
+  DateTime _createDateTime(TimeOfDay time) {
+    final now = DateTime.now();
+
+    return DateTime(now.year, now.month, now.day, time.hour, time.minute);
+  }
+
+  Future<void> _saveSleep() async {
+    if (sleepStart == null || sleepEnd == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select sleep start and end time')),
+      );
+      return;
+    }
+
+    final start = _createDateTime(sleepStart!);
+    final end = _createDateTime(sleepEnd!);
+
+    final sleepData = _calculator.calculate(start: start, end: end);
+
+    context.read<SleepBloc>().add(SleepSaved(sleepData));
+
+    // Update dashboard immediately.
+    context.read<DashboardBloc>().add(
+      DashboardSleepChanged(sleepData.totalSleep.inMinutes),
+    );
+
+    if (!mounted) return;
+
+    Navigator.pop(context, sleepData);
   }
 
   @override
@@ -102,90 +159,6 @@ class _SleepLogPageState extends State<SleepLogPage> {
         ),
       ),
     );
-  }
-
-  Future<void> _saveSleep() async {
-    if (sleepStart == null || sleepEnd == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select sleep start and end time')),
-      );
-      return;
-    }
-
-    final now = DateTime.now();
-
-    final start = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      sleepStart!.hour,
-      sleepStart!.minute,
-    );
-
-    var end = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      sleepEnd!.hour,
-      sleepEnd!.minute,
-    );
-
-    // Handles overnight sleep.
-    if (!end.isAfter(start)) {
-      end = end.add(const Duration(days: 1));
-    }
-
-    final totalMinutes = end.difference(start).inMinutes;
-
-    // Assignment assumption:
-    // Deep = 25%
-    // REM = 20%
-    // Light = remaining 55%
-
-    final deepMinutes = (totalMinutes * 0.25).round();
-
-    final remMinutes = (totalMinutes * 0.20).round();
-
-    final lightMinutes = totalMinutes - deepMinutes - remMinutes;
-
-    final deepStart = start;
-
-    final deepEnd = deepStart.add(Duration(minutes: deepMinutes));
-
-    final remStart = deepEnd;
-
-    final remEnd = remStart.add(Duration(minutes: remMinutes));
-
-    final lightStart = remEnd;
-
-    final lightEnd = lightStart.add(Duration(minutes: lightMinutes));
-
-    final sleepData = SleepData(
-      sleepStart: start,
-      sleepEnd: end,
-      deepSleep: SleepInterval(start: deepStart, end: deepEnd),
-      remSleep: SleepInterval(start: remStart, end: remEnd),
-      lightSleep: SleepInterval(start: lightStart, end: lightEnd),
-      awakePeriods: const [],
-    );
-    if (!sleepData.isBalanced) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid sleep calculation')),
-      );
-      return;
-    }
-
-    // Send data to BLoC.
-    // BLoC → SaveSleep → Repository → Hive
-    context.read<SleepBloc>().add(SleepSaved(sleepData));
-
-    context.read<DashboardBloc>().add(
-      DashboardSleepChanged(sleepData.totalSleep.inMinutes),
-    );
-
-    if (!mounted) return;
-
-    Navigator.pop(context, sleepData);
   }
 }
 

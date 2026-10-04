@@ -60,7 +60,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       // Start pedometer AFTER dashboard is visible.
       _startSteps();
     } catch (error, stackTrace) {
-      // Keep this print while debugging.
       debugPrint('Dashboard loading error: $error');
       debugPrint('stackTrace: $stackTrace');
 

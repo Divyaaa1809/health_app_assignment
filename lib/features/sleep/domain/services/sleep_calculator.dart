@@ -1,47 +1,42 @@
-class SleepBreakdown {
-  final Duration totalSleep;
-  final Duration deepSleep;
-  final Duration remSleep;
-  final Duration lightSleep;
-  final Duration awake;
+import '../entities/sleep_data.dart';
 
-  const SleepBreakdown({
-    required this.totalSleep,
-    required this.deepSleep,
-    required this.remSleep,
-    required this.lightSleep,
-    required this.awake,
-  });
-}
+class SleepDataCalculator {
+  const SleepDataCalculator();
 
-class SleepCalculator {
-  static SleepBreakdown calculate({
-    required DateTime sleepStart,
-    required DateTime sleepEnd,
-  }) {
-    // Handle sleep crossing midnight.
-    var end = sleepEnd;
+  SleepData calculate({required DateTime start, required DateTime end}) {
+    var actualEnd = end;
 
-    if (!end.isAfter(sleepStart)) {
-      end = end.add(const Duration(days: 1));
+    // Handles overnight sleep.
+    if (!actualEnd.isAfter(start)) {
+      actualEnd = actualEnd.add(const Duration(days: 1));
     }
 
-    final total = end.difference(sleepStart);
+    final totalMinutes = actualEnd.difference(start).inMinutes;
 
-    // Assumption for the assignment:
+    // Assignment assumption:
     // Deep = 25%
     // REM = 20%
     // Light = remaining 55%
-    final deepMinutes = (total.inMinutes * 0.25).round();
-    final remMinutes = (total.inMinutes * 0.20).round();
-    final lightMinutes = total.inMinutes - deepMinutes - remMinutes;
+    final deepMinutes = (totalMinutes * 0.25).round();
+    final remMinutes = (totalMinutes * 0.20).round();
+    final lightMinutes = totalMinutes - deepMinutes - remMinutes;
 
-    return SleepBreakdown(
-      totalSleep: total,
-      deepSleep: Duration(minutes: deepMinutes),
-      remSleep: Duration(minutes: remMinutes),
-      lightSleep: Duration(minutes: lightMinutes),
-      awake: Duration.zero,
+    final deepStart = start;
+    final deepEnd = deepStart.add(Duration(minutes: deepMinutes));
+
+    final remStart = deepEnd;
+    final remEnd = remStart.add(Duration(minutes: remMinutes));
+
+    final lightStart = remEnd;
+    final lightEnd = lightStart.add(Duration(minutes: lightMinutes));
+
+    return SleepData(
+      sleepStart: start,
+      sleepEnd: actualEnd,
+      deepSleep: SleepInterval(start: deepStart, end: deepEnd),
+      remSleep: SleepInterval(start: remStart, end: remEnd),
+      lightSleep: SleepInterval(start: lightStart, end: lightEnd),
+      awakePeriods: const [],
     );
   }
 }
