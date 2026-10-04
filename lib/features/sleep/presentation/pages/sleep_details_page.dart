@@ -196,7 +196,7 @@ class _SleepDetailsPageState extends State<SleepDetailsPage> {
           const SizedBox(height: 12),
 
           Text(
-            '${_time(sleep.sleepStart)} → '
+            '${_time(sleep.sleepStart)} - '
             '${_time(sleep.sleepEnd)}',
             style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),

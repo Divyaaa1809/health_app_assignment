@@ -13,7 +13,7 @@ class AppTheme {
       colorScheme: scheme,
       scaffoldBackgroundColor: const Color(0xFFF6F7FB),
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFFE8EBF2),
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,

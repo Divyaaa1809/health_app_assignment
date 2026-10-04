@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -6,20 +8,17 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   Future<void> initializeNotifications() async {
-    const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
-    );
+    try {
+      const androidSettings = AndroidInitializationSettings(
+        '@mipmap/ic_launcher',
+      );
 
-    const settings = InitializationSettings(android: androidSettings);
+      const settings = InitializationSettings(android: androidSettings);
 
-    await _plugin.initialize(settings: settings);
-
-    final androidPlugin = _plugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
-
-    await androidPlugin?.requestNotificationsPermission();
+      await _plugin.initialize(settings: settings);
+    } catch (e) {
+      debugPrint('Error initializing notifications: $e');
+    }
   }
 
   Future<void> showHealthReminder() async {
@@ -35,7 +34,7 @@ class NotificationService {
       );
 
       await _plugin.show(
-        id: 1,
+        id: generateRandomNumber(),
         title: 'Health Reminder',
         body: 'Time to check your daily health metrics.',
         notificationDetails: details,
@@ -43,5 +42,9 @@ class NotificationService {
     } catch (e) {
       debugPrint('Error showing notification: $e');
     }
+  }
+
+  int generateRandomNumber() {
+    return Random().nextInt(100) + 1;
   }
 }

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:pedometer/pedometer.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import 'dashboard_local_data_source.dart';
 
@@ -16,12 +15,6 @@ class DevicePedometerDataSource implements PedometerDataSource {
 
   @override
   Stream<int> watchDailySteps() async* {
-    final permission = await Permission.activityRecognition.request();
-
-    if (!permission.isGranted) {
-      return;
-    }
-
     await for (final event in Pedometer.stepCountStream) {
       final now = DateTime.now();
 

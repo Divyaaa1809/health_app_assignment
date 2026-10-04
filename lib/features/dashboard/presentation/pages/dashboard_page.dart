@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../core/services/notification_service.dart';
 import '../../../sleep/domain/entities/sleep_data.dart';
@@ -26,10 +27,12 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
       context.read<DashboardBloc>().add(const DashboardStarted());
+
+      await _requestPermissions();
     });
   }
 
@@ -92,6 +95,12 @@ class _DashboardPageState extends State<DashboardPage> {
     await bloc.stream.firstWhere(
       (state) => state is DashboardLoaded || state is DashboardError,
     );
+  }
+
+  Future<void> _requestPermissions() async {
+    await Permission.activityRecognition.request();
+
+    await Permission.notification.request();
   }
 
   @override
