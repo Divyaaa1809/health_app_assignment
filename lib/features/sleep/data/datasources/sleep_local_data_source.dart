@@ -1,32 +1,22 @@
-import 'dart:convert';
 import 'package:hive/hive.dart';
+
 import '../../../../core/constants/app_constants.dart';
-import '../models/sleep_model.dart';
+import '../models/sleep_data_hive_model.dart';
 
-abstract class SleepLocalDataSource {
-  Future<SleepModel?> getSleep();
-  Future<void> saveSleep(SleepModel model);
-}
+class SleepLocalDataSource {
+  static const String sleepKey = 'latestSleep';
 
-class HiveSleepLocalDataSource implements SleepLocalDataSource {
-  final Box<dynamic> box;
-
-  const HiveSleepLocalDataSource(this.box);
-
-  @override
-  Future<SleepModel?> getSleep() async {
-    final value = box.get(AppConstants.sleepCacheKey);
-    if (value == null) return null;
-    return SleepModel.fromJson(
-      jsonDecode(value as String) as Map<String, dynamic>,
-    );
+  Box<SleepDataHiveModel> get _box {
+    return Hive.box<SleepDataHiveModel>(AppConstants.sleepBox);
   }
 
-  @override
-  Future<void> saveSleep(SleepModel model) async {
-    await box.put(
-      AppConstants.sleepCacheKey,
-      jsonEncode(model.toJson()),
-    );
+  Future<void> saveSleep(
+    SleepDataHiveModel sleep,
+  ) async {
+    await _box.put(sleepKey, sleep);
+  }
+
+  SleepDataHiveModel? getSleep() {
+    return _box.get(sleepKey);
   }
 }

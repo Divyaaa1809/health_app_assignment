@@ -15,9 +15,11 @@ class SleepInterval extends Equatable {
 class SleepData extends Equatable {
   final DateTime sleepStart;
   final DateTime sleepEnd;
+
   final SleepInterval deepSleep;
   final SleepInterval remSleep;
   final SleepInterval lightSleep;
+
   final List<SleepInterval> awakePeriods;
 
   const SleepData({
@@ -29,19 +31,28 @@ class SleepData extends Equatable {
     required this.awakePeriods,
   });
 
-  Duration get totalSession => sleepEnd.difference(sleepStart);
+  Duration get totalSession {
+    return sleepEnd.difference(sleepStart);
+  }
 
-  Duration get awakeTime => awakePeriods.fold(
-        Duration.zero,
-        (total, period) => total + period.duration,
-      );
+  Duration get awakeTime {
+    return awakePeriods.fold(
+      Duration.zero,
+      (total, period) => total + period.duration,
+    );
+  }
 
-  Duration get totalSleep => totalSession - awakeTime;
+  Duration get totalSleep {
+    return totalSession - awakeTime;
+  }
 
-  Duration get stagedSleep =>
-      deepSleep.duration + remSleep.duration + lightSleep.duration;
+  Duration get stagedSleep {
+    return deepSleep.duration + remSleep.duration + lightSleep.duration;
+  }
 
-  bool get isBalanced => stagedSleep == totalSleep;
+  bool get isBalanced {
+    return stagedSleep == totalSleep;
+  }
 
   SleepData copyWith({
     DateTime? sleepStart,
@@ -63,11 +74,11 @@ class SleepData extends Equatable {
 
   @override
   List<Object?> get props => [
-        sleepStart,
-        sleepEnd,
-        deepSleep,
-        remSleep,
-        lightSleep,
-        awakePeriods,
-      ];
+    sleepStart,
+    sleepEnd,
+    deepSleep,
+    remSleep,
+    lightSleep,
+    awakePeriods,
+  ];
 }

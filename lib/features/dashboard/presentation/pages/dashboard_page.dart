@@ -53,8 +53,9 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Future<void> _openSleepDetails() async {
-    final sleep = await Navigator.of(context).push<SleepData>(
-      MaterialPageRoute(builder: (_) => const SleepDetailsPage()),
+    final sleep = await Navigator.push<SleepData?>(
+      context,
+      MaterialPageRoute(builder: (_) => SleepDetailsPage()),
     );
 
     if (!mounted || sleep == null) {
@@ -69,7 +70,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _openSleepLog() async {
     final sleep = await Navigator.of(
       context,
-    ).push<SleepData>(MaterialPageRoute(builder: (_) => const SleepLogPage()));
+    ).push<SleepData>(MaterialPageRoute(builder: (_) => SleepLogPage()));
 
     if (!mounted || sleep == null) {
       return;
@@ -100,7 +101,6 @@ class _DashboardPageState extends State<DashboardPage> {
       body: SafeArea(
         child: BlocBuilder<DashboardBloc, DashboardState>(
           builder: (context, state) {
-          
             if (state is DashboardInitial || state is DashboardLoading) {
               return const _LoadingView();
             }
@@ -132,7 +132,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 }
-
 
 class _DashboardContent extends StatelessWidget {
   final dynamic data;
@@ -175,7 +174,7 @@ class _DashboardContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Good morning 👋',
+                      'Hi 👋',
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(fontWeight: FontWeight.w800),
                     ),
@@ -455,7 +454,6 @@ class _DashboardContent extends StatelessWidget {
     );
   }
 }
-
 
 class _LoadingView extends StatelessWidget {
   const _LoadingView();

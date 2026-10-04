@@ -15,6 +15,7 @@ import 'features/dashboard/domain/usecases/watch_daily_steps.dart';
 import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/sleep/data/datasources/sleep_local_data_source.dart';
+import 'features/sleep/data/models/sleep_data_hive_model.dart';
 import 'features/sleep/data/repositories/sleep_repository_impl.dart';
 import 'features/sleep/domain/usecases/get_sleep.dart';
 import 'features/sleep/domain/usecases/save_sleep.dart';
@@ -25,14 +26,16 @@ Future<void> main() async {
 
   await Hive.initFlutter();
   final healthBox = await Hive.openBox<dynamic>(AppConstants.healthBox);
-  final sleepBox = await Hive.openBox<dynamic>(AppConstants.sleepBox);
+
+  Hive.registerAdapter(SleepDataHiveModelAdapter());
+  await Hive.openBox<SleepDataHiveModel>(AppConstants.sleepBox);
 
   final notificationService = NotificationService();
-  await notificationService.initialize();
+  await notificationService.initializeNotifications();
 
   final dashboardLocal = HiveDashboardLocalDataSource(healthBox);
-  final sleepLocal = HiveSleepLocalDataSource(sleepBox);
-  final sleepRepository = SleepRepositoryImpl(local: sleepLocal);
+  final sleepLocal = SleepLocalDataSource();
+  final sleepRepository = SleepRepositoryImpl(localDataSource: sleepLocal);
 
   final dashboardRepository = DashboardRepositoryImpl(
     local: dashboardLocal,
@@ -80,6 +83,7 @@ class HealthApp extends StatelessWidget {
         BlocProvider.value(value: sleepBloc),
       ],
       child: MaterialApp(
+
         debugShowCheckedModeBanner: false,
         title: 'Health Dashboard',
         theme: AppTheme.light(),

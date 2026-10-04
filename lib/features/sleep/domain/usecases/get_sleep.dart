@@ -5,5 +5,5 @@ class GetSleep {
   final SleepRepository repository;
   const GetSleep(this.repository);
 
-  Future<SleepData?> call() => repository.getSleep();
+  SleepData? call() => repository.getSleep();
 }

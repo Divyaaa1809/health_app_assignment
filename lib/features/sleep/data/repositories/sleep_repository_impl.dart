@@ -1,21 +1,24 @@
 import '../../domain/entities/sleep_data.dart';
 import '../../domain/repositories/sleep_repository.dart';
 import '../datasources/sleep_local_data_source.dart';
-import '../models/sleep_model.dart';
+import '../models/sleep_data_hive_model.dart';
 
 class SleepRepositoryImpl implements SleepRepository {
-  final SleepLocalDataSource local;
+  final SleepLocalDataSource localDataSource;
 
-  const SleepRepositoryImpl({required this.local});
+  SleepRepositoryImpl({required this.localDataSource});
 
   @override
-  Future<SleepData?> getSleep() async {
-    final model = await local.getSleep();
-    return model?.toEntity();
+  Future<void> saveSleep(SleepData sleep) async {
+    final model = SleepDataHiveModel.fromEntity(sleep);
+
+    await localDataSource.saveSleep(model);
   }
 
   @override
-  Future<void> saveSleep(SleepData sleep) {
-    return local.saveSleep(SleepModel.fromEntity(sleep));
+  SleepData? getSleep() {
+    final model = localDataSource.getSleep();
+
+    return model?.toEntity();
   }
 }

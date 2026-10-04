@@ -2,7 +2,7 @@
 <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="health_app_assignment"
+        android:label="HealthTrack"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

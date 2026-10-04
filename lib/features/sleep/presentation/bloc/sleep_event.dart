@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 import '../../domain/entities/sleep_data.dart';
 
 sealed class SleepEvent extends Equatable {
@@ -14,6 +15,7 @@ class SleepStarted extends SleepEvent {
 
 class SleepSaved extends SleepEvent {
   final SleepData sleep;
+
   const SleepSaved(this.sleep);
 
   @override
