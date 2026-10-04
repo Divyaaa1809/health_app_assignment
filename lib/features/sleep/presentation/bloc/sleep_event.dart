@@ -3,6 +3,7 @@ import '../../domain/entities/sleep_data.dart';
 
 sealed class SleepEvent extends Equatable {
   const SleepEvent();
+
   @override
   List<Object?> get props => [];
 }

@@ -22,3 +22,11 @@ class DashboardStepsChanged extends DashboardEvent {
   @override
   List<Object?> get props => [steps];
 }
+
+class DashboardSleepChanged extends DashboardEvent {
+  final int totalSleepMinutes;
+  const DashboardSleepChanged(this.totalSleepMinutes);
+
+  @override
+  List<Object?> get props => [totalSleepMinutes];
+}

@@ -4,7 +4,7 @@ class DashboardModel {
   final int steps;
   final int calories;
   final int totalSleepMinutes;
-  final DateTime date;
+  final String date;
 
   const DashboardModel({
     required this.steps,
@@ -15,10 +15,10 @@ class DashboardModel {
 
   factory DashboardModel.fromJson(Map<String, dynamic> json) {
     return DashboardModel(
-      steps: (json['steps'] as num).toInt(),
-      calories: (json['calories'] as num).toInt(),
-      totalSleepMinutes: (json['totalSleepMinutes'] as num).toInt(),
-      date: DateTime.parse(json['date'] as String),
+      steps: json['steps'] as int,
+      calories: json['calories'] as int,
+      totalSleepMinutes: json['totalSleepMinutes'] as int,
+      date: json['date'] as String,
     );
   }
 
@@ -26,14 +26,16 @@ class DashboardModel {
         'steps': steps,
         'calories': calories,
         'totalSleepMinutes': totalSleepMinutes,
-        'date': date.toIso8601String(),
+        'date': date,
       };
 
-  DashboardData toEntity({bool isOffline = false}) => DashboardData(
-        steps: steps,
-        calories: calories,
-        totalSleep: Duration(minutes: totalSleepMinutes),
-        date: date,
-        isOffline: isOffline,
-      );
+  DashboardData toEntity({bool isOffline = false}) {
+    return DashboardData(
+      steps: steps,
+      calories: calories,
+      totalSleepMinutes: totalSleepMinutes,
+      date: DateTime.parse(date),
+      isOffline: isOffline,
+    );
+  }
 }

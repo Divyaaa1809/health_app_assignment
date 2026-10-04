@@ -3,14 +3,14 @@ import 'package:equatable/equatable.dart';
 class DashboardData extends Equatable {
   final int steps;
   final int calories;
-  final Duration totalSleep;
+  final int totalSleepMinutes;
   final DateTime date;
   final bool isOffline;
 
   const DashboardData({
     required this.steps,
     required this.calories,
-    required this.totalSleep,
+    required this.totalSleepMinutes,
     required this.date,
     this.isOffline = false,
   });
@@ -18,19 +18,25 @@ class DashboardData extends Equatable {
   DashboardData copyWith({
     int? steps,
     int? calories,
-    Duration? totalSleep,
+    int? totalSleepMinutes,
     DateTime? date,
     bool? isOffline,
   }) {
     return DashboardData(
       steps: steps ?? this.steps,
       calories: calories ?? this.calories,
-      totalSleep: totalSleep ?? this.totalSleep,
+      totalSleepMinutes: totalSleepMinutes ?? this.totalSleepMinutes,
       date: date ?? this.date,
       isOffline: isOffline ?? this.isOffline,
     );
   }
 
   @override
-  List<Object?> get props => [steps, calories, totalSleep, date, isOffline];
+  List<Object?> get props => [
+        steps,
+        calories,
+        totalSleepMinutes,
+        date,
+        isOffline,
+      ];
 }

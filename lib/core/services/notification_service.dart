@@ -17,11 +17,10 @@ class NotificationService {
       android: AndroidNotificationDetails(
         'health_reminders',
         'Health Reminders',
-        channelDescription: 'Health dashboard reminders',
+        channelDescription: 'Daily health dashboard reminders',
         importance: Importance.defaultImportance,
         priority: Priority.defaultPriority,
       ),
-      // iOS: DarwinNotificationDetails(),
     );
 
     await _plugin.show(

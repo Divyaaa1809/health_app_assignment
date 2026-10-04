@@ -9,16 +9,16 @@ abstract class SleepLocalDataSource {
 }
 
 class HiveSleepLocalDataSource implements SleepLocalDataSource {
-  final Box<String> box;
+  final Box<dynamic> box;
 
   const HiveSleepLocalDataSource(this.box);
 
   @override
   Future<SleepModel?> getSleep() async {
-    final raw = box.get(AppConstants.sleepCacheKey);
-    if (raw == null) return null;
+    final value = box.get(AppConstants.sleepCacheKey);
+    if (value == null) return null;
     return SleepModel.fromJson(
-      jsonDecode(raw) as Map<String, dynamic>,
+      jsonDecode(value as String) as Map<String, dynamic>,
     );
   }
 

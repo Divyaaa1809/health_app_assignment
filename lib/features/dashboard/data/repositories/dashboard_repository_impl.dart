@@ -16,39 +16,63 @@ class DashboardRepositoryImpl implements DashboardRepository {
     required this.pedometer,
   });
 
-  @override
-  Future<DashboardData> getDashboard() async {
-    final cached = await local.getCachedDashboard();
-    final steps = await _getSteps(cached?.steps ?? 0);
+@override
+Future<DashboardData> getDashboard() async {
+  final cached =
+      await local.getCachedDashboard();
 
-    try {
-      final remoteData = await remote.fetchDashboard(steps);
-      await local.cacheDashboard(remoteData);
-      return remoteData.toEntity();
-    } catch (_) {
-      if (cached != null) {
-        return DashboardModel(
-          steps: steps,
-          calories: cached.calories,
-          totalSleepMinutes: cached.totalSleepMinutes,
-          date: cached.date,
-        ).toEntity(isOffline: true);
-      }
-      rethrow;
-    }
-  }
+  try {
+    final steps = cached?.steps ?? 0;
 
-  Future<int> _getSteps(int fallback) async {
-    try {
-      return await pedometer.dailyStepsStream.first.timeout(
-        const Duration(seconds: 3),
-        onTimeout: () => fallback,
+    final calories =
+        await remote.fetchMockCalories(steps);
+
+    final model = DashboardModel(
+      steps: steps,
+      calories: calories,
+      totalSleepMinutes:
+          cached?.totalSleepMinutes ?? 0,
+      date: DateTime.now().toString(),
+    );
+
+    await local.cacheDashboard(model);
+
+    return model.toEntity();
+  } catch (_) {
+    if (cached != null) {
+      return cached.toEntity(
+        isOffline: true,
       );
-    } catch (_) {
-      return fallback;
     }
+
+    // First launch with no cache.
+    // Still return usable dashboard data.
+    final model = DashboardModel(
+      steps: 0,
+      calories: 0,
+      totalSleepMinutes: 0,
+      date: DateTime.now().toString(),
+    );
+
+    return model.toEntity(
+      isOffline: true,
+    );
   }
+}
+  @override
+  Stream<int> watchDailySteps() => pedometer.watchDailySteps();
 
   @override
-  Stream<int> watchDailySteps() => pedometer.dailyStepsStream;
+  Future<void> updateCachedSleep(int totalSleepMinutes) async {
+    final cached = await local.getCachedDashboard();
+    if (cached == null) return;
+    await local.cacheDashboard(
+      DashboardModel(
+        steps: cached.steps,
+        calories: cached.calories,
+        totalSleepMinutes: totalSleepMinutes,
+        date: cached.date,
+      ),
+    );
+  }
 }

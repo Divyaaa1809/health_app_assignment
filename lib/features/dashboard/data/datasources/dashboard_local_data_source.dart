@@ -6,21 +6,21 @@ import '../models/dashboard_model.dart';
 abstract class DashboardLocalDataSource {
   Future<DashboardModel?> getCachedDashboard();
   Future<void> cacheDashboard(DashboardModel model);
-  Future<int?> getPedometerBaseline(String dateKey);
-  Future<void> savePedometerBaseline(String dateKey, int baseline);
+  Future<int?> getStepBaseline(String dateKey);
+  Future<void> saveStepBaseline(String dateKey, int baseline);
 }
 
 class HiveDashboardLocalDataSource implements DashboardLocalDataSource {
-  final Box<String> box;
+  final Box<dynamic> box;
 
   const HiveDashboardLocalDataSource(this.box);
 
   @override
   Future<DashboardModel?> getCachedDashboard() async {
-    final raw = box.get(AppConstants.dashboardCacheKey);
-    if (raw == null) return null;
+    final value = box.get(AppConstants.dashboardCacheKey);
+    if (value == null) return null;
     return DashboardModel.fromJson(
-      jsonDecode(raw) as Map<String, dynamic>,
+      jsonDecode(value as String) as Map<String, dynamic>,
     );
   }
 
@@ -33,21 +33,15 @@ class HiveDashboardLocalDataSource implements DashboardLocalDataSource {
   }
 
   @override
-  Future<int?> getPedometerBaseline(String dateKey) async {
-    final value = box.get(
-      '${AppConstants.pedometerBaselinePrefix}$dateKey',
-    );
-    return value == null ? null : int.tryParse(value);
+  Future<int?> getStepBaseline(String dateKey) async {
+    return box.get('${AppConstants.stepBaselinePrefix}$dateKey') as int?;
   }
 
   @override
-  Future<void> savePedometerBaseline(
-    String dateKey,
-    int baseline,
-  ) async {
+  Future<void> saveStepBaseline(String dateKey, int baseline) async {
     await box.put(
-      '${AppConstants.pedometerBaselinePrefix}$dateKey',
-      baseline.toString(),
+      '${AppConstants.stepBaselinePrefix}$dateKey',
+      baseline,
     );
   }
 }

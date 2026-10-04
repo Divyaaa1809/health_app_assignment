@@ -3,6 +3,7 @@ import '../../domain/entities/sleep_data.dart';
 
 sealed class SleepState extends Equatable {
   const SleepState();
+
   @override
   List<Object?> get props => [];
 }
@@ -21,6 +22,14 @@ class SleepLoaded extends SleepState {
 class SleepSaving extends SleepState {
   final SleepData sleep;
   const SleepSaving(this.sleep);
+
+  @override
+  List<Object?> get props => [sleep];
+}
+
+class SleepSavedState extends SleepState {
+  final SleepData sleep;
+  const SleepSavedState(this.sleep);
 
   @override
   List<Object?> get props => [sleep];

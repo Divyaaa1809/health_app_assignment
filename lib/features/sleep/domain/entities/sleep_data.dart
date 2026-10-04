@@ -1,32 +1,73 @@
 import 'package:equatable/equatable.dart';
 
+class SleepInterval extends Equatable {
+  final DateTime start;
+  final DateTime end;
+
+  const SleepInterval({required this.start, required this.end});
+
+  Duration get duration => end.difference(start);
+
+  @override
+  List<Object?> get props => [start, end];
+}
+
 class SleepData extends Equatable {
-  final DateTime startTime;
-  final DateTime endTime;
-  final Duration deepSleep;
-  final Duration remSleep;
-  final Duration lightSleep;
-  final Duration awakeTime;
+  final DateTime sleepStart;
+  final DateTime sleepEnd;
+  final SleepInterval deepSleep;
+  final SleepInterval remSleep;
+  final SleepInterval lightSleep;
+  final List<SleepInterval> awakePeriods;
 
   const SleepData({
-    required this.startTime,
-    required this.endTime,
+    required this.sleepStart,
+    required this.sleepEnd,
     required this.deepSleep,
     required this.remSleep,
     required this.lightSleep,
-    required this.awakeTime,
+    required this.awakePeriods,
   });
 
-  Duration get totalSleep =>
-      endTime.difference(startTime) - awakeTime;
+  Duration get totalSession => sleepEnd.difference(sleepStart);
+
+  Duration get awakeTime => awakePeriods.fold(
+        Duration.zero,
+        (total, period) => total + period.duration,
+      );
+
+  Duration get totalSleep => totalSession - awakeTime;
+
+  Duration get stagedSleep =>
+      deepSleep.duration + remSleep.duration + lightSleep.duration;
+
+  bool get isBalanced => stagedSleep == totalSleep;
+
+  SleepData copyWith({
+    DateTime? sleepStart,
+    DateTime? sleepEnd,
+    SleepInterval? deepSleep,
+    SleepInterval? remSleep,
+    SleepInterval? lightSleep,
+    List<SleepInterval>? awakePeriods,
+  }) {
+    return SleepData(
+      sleepStart: sleepStart ?? this.sleepStart,
+      sleepEnd: sleepEnd ?? this.sleepEnd,
+      deepSleep: deepSleep ?? this.deepSleep,
+      remSleep: remSleep ?? this.remSleep,
+      lightSleep: lightSleep ?? this.lightSleep,
+      awakePeriods: awakePeriods ?? this.awakePeriods,
+    );
+  }
 
   @override
   List<Object?> get props => [
-        startTime,
-        endTime,
+        sleepStart,
+        sleepEnd,
         deepSleep,
         remSleep,
         lightSleep,
-        awakeTime,
+        awakePeriods,
       ];
 }

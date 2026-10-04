@@ -1,32 +1,43 @@
 import 'dart:async';
+
 import 'package:pedometer/pedometer.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 import 'dashboard_local_data_source.dart';
 
 abstract class PedometerDataSource {
-  Stream<int> get dailyStepsStream;
+  Stream<int> watchDailySteps();
 }
 
 class DevicePedometerDataSource implements PedometerDataSource {
   final DashboardLocalDataSource local;
-  late final Stream<int> _stream;
 
-  DevicePedometerDataSource(this.local) {
-    _stream = Pedometer.stepCountStream.asyncMap(_toDailySteps);
-  }
-
-  Future<int> _toDailySteps(StepCount event) async {
-    final now = DateTime.now();
-    final key = '${now.year}-${now.month}-${now.day}';
-
-    var baseline = await local.getPedometerBaseline(key);
-    if (baseline == null) {
-      baseline = event.steps;
-      await local.savePedometerBaseline(key, baseline);
-    }
-
-    return (event.steps - baseline).clamp(0, 1000000);
-  }
+  const DevicePedometerDataSource({required this.local});
 
   @override
-  Stream<int> get dailyStepsStream => _stream;
+  Stream<int> watchDailySteps() async* {
+    final permission = await Permission.activityRecognition.request();
+
+    if (!permission.isGranted) {
+      return;
+    }
+
+    await for (final event in Pedometer.stepCountStream) {
+      final now = DateTime.now();
+
+      final dateKey = '${now.year}-${now.month}-${now.day}';
+
+      var baseline = await local.getStepBaseline(dateKey);
+
+      if (baseline == null) {
+        baseline = event.steps;
+
+        await local.saveStepBaseline(dateKey, baseline);
+      }
+
+      final dailySteps = event.steps - baseline;
+
+      yield dailySteps < 0 ? 0 : dailySteps;
+    }
+  }
 }

@@ -6,7 +6,7 @@ import '../models/sleep_model.dart';
 class SleepRepositoryImpl implements SleepRepository {
   final SleepLocalDataSource local;
 
-  const SleepRepositoryImpl(this.local);
+  const SleepRepositoryImpl({required this.local});
 
   @override
   Future<SleepData?> getSleep() async {

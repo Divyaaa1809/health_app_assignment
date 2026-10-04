@@ -1,57 +1,88 @@
 import '../../domain/entities/sleep_data.dart';
 
 class SleepModel {
-  final DateTime startTime;
-  final DateTime endTime;
-  final int deepMinutes;
-  final int remMinutes;
-  final int lightMinutes;
-  final int awakeMinutes;
+  final String sleepStart;
+  final String sleepEnd;
+  final String deepStart;
+  final String deepEnd;
+  final String remStart;
+  final String remEnd;
+  final String lightStart;
+  final String lightEnd;
+  final List<Map<String, String>> awakePeriods;
 
   const SleepModel({
-    required this.startTime,
-    required this.endTime,
-    required this.deepMinutes,
-    required this.remMinutes,
-    required this.lightMinutes,
-    required this.awakeMinutes,
+    required this.sleepStart,
+    required this.sleepEnd,
+    required this.deepStart,
+    required this.deepEnd,
+    required this.remStart,
+    required this.remEnd,
+    required this.lightStart,
+    required this.lightEnd,
+    required this.awakePeriods,
   });
 
   factory SleepModel.fromJson(Map<String, dynamic> json) {
     return SleepModel(
-      startTime: DateTime.parse(json['startTime'] as String),
-      endTime: DateTime.parse(json['endTime'] as String),
-      deepMinutes: (json['deepMinutes'] as num).toInt(),
-      remMinutes: (json['remMinutes'] as num).toInt(),
-      lightMinutes: (json['lightMinutes'] as num).toInt(),
-      awakeMinutes: (json['awakeMinutes'] as num).toInt(),
+      sleepStart: json['sleepStart'] as String,
+      sleepEnd: json['sleepEnd'] as String,
+      deepStart: json['deepStart'] as String,
+      deepEnd: json['deepEnd'] as String,
+      remStart: json['remStart'] as String,
+      remEnd: json['remEnd'] as String,
+      lightStart: json['lightStart'] as String,
+      lightEnd: json['lightEnd'] as String,
+      awakePeriods: (json['awakePeriods'] as List<dynamic>)
+          .map((e) => Map<String, String>.from(e as Map))
+          .toList(),
     );
   }
 
-  factory SleepModel.fromEntity(SleepData data) => SleepModel(
-        startTime: data.startTime,
-        endTime: data.endTime,
-        deepMinutes: data.deepSleep.inMinutes,
-        remMinutes: data.remSleep.inMinutes,
-        lightMinutes: data.lightSleep.inMinutes,
-        awakeMinutes: data.awakeTime.inMinutes,
-      );
-
   Map<String, dynamic> toJson() => {
-        'startTime': startTime.toIso8601String(),
-        'endTime': endTime.toIso8601String(),
-        'deepMinutes': deepMinutes,
-        'remMinutes': remMinutes,
-        'lightMinutes': lightMinutes,
-        'awakeMinutes': awakeMinutes,
+        'sleepStart': sleepStart,
+        'sleepEnd': sleepEnd,
+        'deepStart': deepStart,
+        'deepEnd': deepEnd,
+        'remStart': remStart,
+        'remEnd': remEnd,
+        'lightStart': lightStart,
+        'lightEnd': lightEnd,
+        'awakePeriods': awakePeriods,
       };
 
-  SleepData toEntity() => SleepData(
-        startTime: startTime,
-        endTime: endTime,
-        deepSleep: Duration(minutes: deepMinutes),
-        remSleep: Duration(minutes: remMinutes),
-        lightSleep: Duration(minutes: lightMinutes),
-        awakeTime: Duration(minutes: awakeMinutes),
-      );
+  SleepData toEntity() {
+    SleepInterval interval(String start, String end) =>
+        SleepInterval(start: DateTime.parse(start), end: DateTime.parse(end));
+
+    return SleepData(
+      sleepStart: DateTime.parse(sleepStart),
+      sleepEnd: DateTime.parse(sleepEnd),
+      deepSleep: interval(deepStart, deepEnd),
+      remSleep: interval(remStart, remEnd),
+      lightSleep: interval(lightStart, lightEnd),
+      awakePeriods: awakePeriods
+          .map((e) => interval(e['start']!, e['end']!))
+          .toList(),
+    );
+  }
+
+  factory SleepModel.fromEntity(SleepData entity) {
+    Map<String, String> mapInterval(SleepInterval value) => {
+          'start': value.start.toIso8601String(),
+          'end': value.end.toIso8601String(),
+        };
+
+    return SleepModel(
+      sleepStart: entity.sleepStart.toIso8601String(),
+      sleepEnd: entity.sleepEnd.toIso8601String(),
+      deepStart: entity.deepSleep.start.toIso8601String(),
+      deepEnd: entity.deepSleep.end.toIso8601String(),
+      remStart: entity.remSleep.start.toIso8601String(),
+      remEnd: entity.remSleep.end.toIso8601String(),
+      lightStart: entity.lightSleep.start.toIso8601String(),
+      lightEnd: entity.lightSleep.end.toIso8601String(),
+      awakePeriods: entity.awakePeriods.map(mapInterval).toList(),
+    );
+  }
 }
